@@ -36,8 +36,8 @@ php artisan migrate
 ## Usage :
 In any auth model you want to follow steps you have to use the HasActivityLogs like
 
-use Elkady\ActivityLogger\Traits\HasActivityLogs;
 ```php
+use Elkady\ActivityLogger\Traits\HasActivityLogs;
 class User extends Authenticatable
 {
     use HasActivityLogs;

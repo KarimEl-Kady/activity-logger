@@ -1,23 +1,43 @@
 <?php
 
-namespace Elkady\ActivityLogger;
+namespace Elkady\ActivityLogger\Observers;
 
-use Illuminate\Support\ServiceProvider;
+use Elkady\ActivityLogger\Models\ActivityLog;
 
-class ActivityLoggerServiceProvider extends ServiceProvider
+class ActivityLogObserver
 {
-    public function boot()
+    public function created($model)
     {
-        $this->publishes([
-            __DIR__ . '/../config/activity-logger.php' => config_path('activity-logger.php'),
-        ], 'config');
+        $this->log($model, 'created');
+    }
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    public function updated($model)
+    {
+        $this->log($model, 'updated');
+    }
 
-        foreach (config('activity-logger.targets', []) as $modelClass) {
-            if (class_exists($modelClass)) {
-                $modelClass::observe(ActivityLogObserver::class);
-            }
+    public function deleted($model)
+    {
+        $this->log($model, 'deleted');
+    }
+
+    protected function log($model, $action)
+    {
+        if (!in_array($action, config('activity-logger.log_actions', []))) {
+            return;
         }
+
+        $user = auth()->user();
+        if (!$user) {
+            return;
+        }
+
+        ActivityLog::create([
+            'creatorable_type' => get_class($user),
+            'creatorable_id'   => $user->id,
+            'action'           => $action,
+            'actionable_type'  => get_class($model),
+            'actionable_id'    => $model->id
+        ]);
     }
 }

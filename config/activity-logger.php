@@ -19,4 +19,18 @@ return [
     | Choose which of its lifecycle events should be recorded.
     */
     'log_actions' => ['created', 'updated', 'deleted', 'restored'],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Report UI
+    |--------------------------------------------------------------------------
+    | A ready-made, filterable report page. Disabled by default. When you
+    | enable it, add your own auth middleware (e.g. 'auth') — the package
+    | has no opinion on who should be allowed to view the logs.
+    */
+    'ui' => [
+        'enabled' => env('ACTIVITY_LOGGER_UI_ENABLED', false),
+        'path' => 'activity-logs',
+        'middleware' => ['web'],
+    ],
 ];

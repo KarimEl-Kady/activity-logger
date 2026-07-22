@@ -11,6 +11,8 @@ A Laravel package for automatically logging authenticated users' actions (create
 - 🔗 **Polymorphic Relations** — logs both the causer and the affected model
 - 🛠 **Easy Integration** — install, configure, done
 - ♻️ **Soft-Delete Aware** — logs `restored` in addition to `created`/`updated`/`deleted`
+- 📊 **Filterable Reports** — query logs by subject, causer, action, or date range with chainable Eloquent scopes
+- 🖥 **Built-in Report Page** — an optional, ready-made filterable UI, no front-end work required
 
 ---
 
@@ -50,6 +52,49 @@ Every `created`, `updated`, `deleted`, and `restored` event on `Post` is now log
 
 ```php
 $post->activityLogs; // logs recorded about this Post
+```
+
+## Reports & Filtering
+`ActivityLog` ships with scopes so you can build reports without writing raw queries:
+
+```php
+use Elkady\ActivityLogger\Models\ActivityLog;
+
+// everything that happened to a given Post
+ActivityLog::forSubject($post)->get();
+
+// everything a given user did
+ActivityLog::causedBy($user)->get();
+
+// combine, filter by action, filter by date range, paginate
+ActivityLog::forSubject($post)
+    ->causedBy($user)
+    ->ofAction(['updated', 'deleted'])
+    ->between('2026-01-01', '2026-07-22')
+    ->latest()
+    ->paginate(25);
+
+// filter by type only, without a specific instance
+ActivityLog::forSubject(Post::class)->ofAction('deleted')->get();
+```
+
+## Report UI
+The package includes an optional, self-contained report page — a filter bar (action, subject type, causer type, date range) plus a paginated table — with no front-end setup required. It's off by default. Turn it on in `config/activity-logger.php`:
+
+```php
+'ui' => [
+    'enabled' => true,
+    'path' => 'activity-logs',
+    'middleware' => ['web', 'auth'], // add your own auth middleware here
+],
+```
+
+The package has no opinion on who should be allowed to view the logs, so **always add your own auth middleware** (or a custom gate-based middleware) to `ui.middleware` before enabling it — otherwise the page is open to anyone who can reach the route.
+
+Visit `/activity-logs` (or whatever `ui.path` is set to) to see it. To customize the look, publish the view:
+
+```bash
+php artisan vendor:publish --provider="Elkady\ActivityLogger\ActivityLoggerServiceProvider" --tag=views
 ```
 
 ## Update the Config File

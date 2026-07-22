@@ -1,15 +1,16 @@
 # Laravel Activity Logger
 
-A Laravel package for automatically logging authenticated users' actions (create, update, delete) on configured models.
+A Laravel package for automatically logging authenticated users' actions (create, update, delete, restore) on any model using the `HasActivityLogs` trait.
 
 ---
 
 ## Features
 - 🔄 **Automatic Logging** via Laravel Observers — no manual calls required
-- ⚙️ **Configurable** — choose which models to track
-- 🔗 **Polymorphic Relations** — works with multiple auth models
+- ⚙️ **Trait-Driven** — add `HasActivityLogs` to any model you want tracked, no config list to maintain
+- 🔐 **Multi-Guard Aware** — resolves the causer across web, api, admin, or any custom guard
+- 🔗 **Polymorphic Relations** — logs both the causer and the affected model
 - 🛠 **Easy Integration** — install, configure, done
-- 🚫 **No Modification Needed** for target models
+- ♻️ **Soft-Delete Aware** — logs `restored` in addition to `created`/`updated`/`deleted`
 
 ---
 
@@ -33,28 +34,31 @@ then you have to migrate the added database:
 php artisan migrate
 ```
 
-## Usage :
-In any auth model you want to follow steps you have to use the HasActivityLogs like
+## Usage
+Add `HasActivityLogs` to any model you want to track — that's what turns on logging for it, no config array required:
 
 ```php
 use Elkady\ActivityLogger\Traits\HasActivityLogs;
-class User extends Authenticatable
+
+class Post extends Model
 {
     use HasActivityLogs;
 }
 ```
 
+Every `created`, `updated`, `deleted`, and `restored` event on `Post` is now logged automatically, attributed to whichever guard-authenticated user performed it. Read them back via the relation the trait adds:
+
+```php
+$post->activityLogs; // logs recorded about this Post
+```
+
 ## Update the Config File
-In config/activity-logger.php, list the models you want to track:
-for example 
+In `config/activity-logger.php`, list the guards to check for the current user and which lifecycle events to record:
+
 ```php
 return [
-    'targets' => [
-        App\Models\Post::class,
-        App\Models\Order::class,
-    ],
+    'guards' => ['web', 'api'],
 
-    'log_actions' => ['created', 'updated', 'deleted'],
+    'log_actions' => ['created', 'updated', 'deleted', 'restored'],
 ];
-
 ```

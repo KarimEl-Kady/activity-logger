@@ -3,21 +3,20 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Models to Log
+    | Guards to Check for the Causer
     |--------------------------------------------------------------------------
-    | Add the models that should be tracked for create/update/delete.
-    | Example:
-    | App\Models\Post::class,
-    | App\Models\Order::class,
+    | The package looks through these guards, in order, for the first
+    | authenticated user and records them as the causer of the action.
+    | Add every guard your app authenticates users against (web, api, admin...).
     */
-    'targets' => [
-        // App\Models\Post::class,
-    ],
+    'guards' => ['web'],
 
     /*
     |--------------------------------------------------------------------------
     | Actions to Log
     |--------------------------------------------------------------------------
+    | Any model using the HasActivityLogs trait is observed automatically.
+    | Choose which of its lifecycle events should be recorded.
     */
-    'log_actions' => ['created', 'updated', 'deleted'],
+    'log_actions' => ['created', 'updated', 'deleted', 'restored'],
 ];

@@ -2,7 +2,6 @@
 
 namespace Elkady\ActivityLogger;
 
-use Elkady\ActivityLogger\Observers\ActivityLogObserver;
 use Illuminate\Support\ServiceProvider;
 
 class ActivityLoggerServiceProvider extends ServiceProvider
@@ -14,11 +13,5 @@ class ActivityLoggerServiceProvider extends ServiceProvider
         ], 'config');
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-
-        foreach (config('activity-logger.targets', []) as $modelClass) {
-            if (class_exists($modelClass)) {
-                $modelClass::observe(ActivityLogObserver::class);
-            }
-        }
     }
 }
